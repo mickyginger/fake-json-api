@@ -1,12 +1,14 @@
 import sinon from 'sinon'
+import schema from './schema.json'
 import initialData from './data.json'
 import Dexie from 'dexie'
+import relationships from 'dexie-relationships'
 
-const db = new Dexie('myDb')
+const db = new Dexie('fem', { addons: [relationships] })
 
 const stores = {}
-for(const store in initialData) {
-  stores[store] = '++id,' + Object.keys(initialData[store][0]).join(',')
+for(const table in schema) {
+  stores[table] = schema[table].schema
 }
 
 db.version(1)
@@ -17,35 +19,48 @@ for(const store in initialData) {
     .then(count => {
       if(!count) return db[store].bulkPut(initialData[store])
     })
-    .then(() => db[store].toArray())
 }
 
 var xhr = sinon.useFakeXMLHttpRequest()
 
-function getRecords(store) {
-  return db[store].toArray()
+function getRecords(table) {
+  return db[table].with(schema[table].populate || {})
 }
 
-function createRecord(store, data) {
-  return db[store].add(data)
-    .then(id => db[store].get(id))
+function getRecord(table, id) {
+  return db[table].where({ id: +id }).with(schema[table].populate || {}).then(records => records[0])
 }
 
-function getRecord(store, id) {
-  return db[store].get(+id)
+function createRecord(table, data) {
+  return db[table].add(data)
+    .then(id => getRecord(table, id))
 }
 
-function updateRecord(store, id, data) {
-  return db[store].update(+id, data)
-    .then(() => db[store].get(+id))
+function updateRecord(table, id, data) {
+  return db[table].update(+id, data)
+    .then(() => getRecord(table, id))
 }
 
-function deleteRecord(store, id) {
-  return db[store].delete(+id)
+function deleteRecord(table, id) {
+  return db[table].delete(+id)
 }
 
 function getPathInfo(path) {
   return path.split('/').slice(1)
+}
+
+function jsonify(data) {
+  const jsonified = {}
+
+  Object.getOwnPropertyNames(data).forEach(key => {
+    jsonified[key] = typeof(key) === 'object' ? JSON.stringify(data[key]) : data[key]
+  })
+
+  return jsonified
+}
+
+function toJSON(data) {
+  return JSON.stringify(data instanceof Array ? data.map(jsonify) : jsonify(data))
 }
 
 xhr.onCreate = (xhr) => {
@@ -54,29 +69,27 @@ xhr.onCreate = (xhr) => {
     let data = null
     let status = 200
 
-    const [ store, id ] = getPathInfo(xhr.url)
+    const [ table, id ] = getPathInfo(xhr.url)
 
     if(xhr.method === 'GET') {
-      if(id) data = await getRecord(store, id)
-      else data = await getRecords(store)
-
+      data = id ? await getRecord(table, id) : await getRecords(table)
       if(!data) return xhr.respond(404)
     }
 
     if(xhr.method === 'POST') {
-      data = await createRecord(store, JSON.parse(xhr.requestBody))
+      data = await createRecord(table, JSON.parse(xhr.requestBody))
       status = 201
     }
 
     if(xhr.method === 'PUT') {
-      data = await updateRecord(store, id, JSON.parse(xhr.requestBody))
+      data = await updateRecord(table, id, JSON.parse(xhr.requestBody))
       if(!data) return xhr.respond(404)
     }
 
     if(xhr.method === 'DELETE') {
-      data = await getRecord(store, id)
+      data = await getRecord(table, id)
       if(data) {
-        await deleteRecord(store, id)
+        await deleteRecord(table, id)
         return xhr.respond(204)
       }
 
@@ -86,6 +99,6 @@ xhr.onCreate = (xhr) => {
     xhr.respond(status, {
       'Content-Type': 'application/json',
       'Content-Length': data.length
-    }, JSON.stringify(data))
-  }, 0)
+    }, toJSON(data))
+  }, 500)
 }

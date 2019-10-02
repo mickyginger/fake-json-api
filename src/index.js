@@ -8,7 +8,7 @@ import axios from 'axios'
 class App extends React.Component {
 
   componentDidMount() {
-    axios.get('/posts/2')
+    axios.get('/users/1')
       .then(res => console.log(res.data))
   }
 
