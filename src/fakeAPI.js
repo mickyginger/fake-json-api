@@ -1,101 +1,91 @@
 import sinon from 'sinon'
 import initialData from './data.json'
-import shortid from 'shortid'
+import Dexie from 'dexie'
 
-for(const path in initialData) {
-  const records = initialData[path].map(record => {
-    record._id = shortid.generate()
-    return record
-  })
+const db = new Dexie('myDb')
 
-  if(!localStorage.getItem(path)) localStorage.setItem(path, JSON.stringify(records))
+const stores = {}
+for(const store in initialData) {
+  stores[store] = '++id,' + Object.keys(initialData[store][0]).join(',')
 }
 
-const server = sinon.fakeServer.create({
-  autoRespond: true
-})
+db.version(1)
+  .stores(stores)
 
-function getRecords(path) {
-  const data = localStorage.getItem(path)
-  return data ? JSON.parse(data) : null
+for(const store in initialData) {
+  db[store].count()
+    .then(count => {
+      if(!count) return db[store].bulkPut(initialData[store])
+    })
+    .then(() => db[store].toArray())
 }
 
-function createRecord(path, data) {
-  const records = getRecords(path)
+var xhr = sinon.useFakeXMLHttpRequest()
 
-  if(!records) return false
-
-  data._id = shortid.generate()
-  records.push(data)
-  localStorage.setItem(path, JSON.stringify(records))
-
-  return data
+function getRecords(store) {
+  return db[store].toArray()
 }
 
-function getRecord(path, id) {
-  const records = getRecords(path)
-  return records.find(record => record._id === id)
+function createRecord(store, data) {
+  return db[store].add(data)
+    .then(id => db[store].get(id))
 }
 
-function updateRecord(path, id, data) {
-  const records = getRecords(path)
-  let record = records.find(record => record._id === id)
-  const index = records.indexOf(record)
-
-  record = Object.assign(record, data)
-
-  records.splice(index, 1, record)
-  localStorage.setItem(path, JSON.stringify(records))
-
-  return record
+function getRecord(store, id) {
+  return db[store].get(+id)
 }
 
-function deleteRecord(path, id) {
-  const records = getRecords(path)
-  const index = records.findIndex(record => record._id === id)
+function updateRecord(store, id, data) {
+  return db[store].update(+id, data)
+    .then(() => db[store].get(+id))
+}
 
-  if(index === -1) return false
-
-  records.splice(index, 1)
-  localStorage.setItem(path, JSON.stringify(records))
-  return true
+function deleteRecord(store, id) {
+  return db[store].delete(+id)
 }
 
 function getPathInfo(path) {
   return path.split('/').slice(1)
 }
 
-server.respondWith((xhr) => {
-  let data = null
-  let status = 200
+xhr.onCreate = (xhr) => {
 
-  const [ root, id ] = getPathInfo(xhr.url)
+  setTimeout(async () => {
+    let data = null
+    let status = 200
 
-  if(!(root in initialData)) xhr.respond(404)
+    const [ store, id ] = getPathInfo(xhr.url)
 
-  if(xhr.method === 'GET') {
-    if(id) data = getRecord(root, id)
-    else data = getRecords(root)
+    if(xhr.method === 'GET') {
+      if(id) data = await getRecord(store, id)
+      else data = await getRecords(store)
 
-    if(!data) return xhr.respond(404)
-  }
+      if(!data) return xhr.respond(404)
+    }
 
-  if(xhr.method === 'POST') {
-    data = createRecord(root, JSON.parse(xhr.requestBody))
-    status = 201
-  }
+    if(xhr.method === 'POST') {
+      data = await createRecord(store, JSON.parse(xhr.requestBody))
+      status = 201
+    }
 
-  if(xhr.method === 'PUT') {
-    data = updateRecord(root, id, JSON.parse(xhr.requestBody))
-    if(!data) return xhr.respond(404)
-  }
+    if(xhr.method === 'PUT') {
+      data = await updateRecord(store, id, JSON.parse(xhr.requestBody))
+      if(!data) return xhr.respond(404)
+    }
 
-  if(xhr.method === 'DELETE') {
-    return deleteRecord(root, id) ? xhr.respond(204) : xhr.respond(404)
-  }
+    if(xhr.method === 'DELETE') {
+      data = await getRecord(store, id)
+      if(data) {
+        await deleteRecord(store, id)
+        return xhr.respond(204)
+      }
 
-  xhr.respond(status, {
-    'Content-Type': 'application/json',
-    'Content-Length': data.length
-  }, JSON.stringify(data))
-})
+      return xhr.respond(404)
+    }
+
+    xhr.respond(status, {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
+    }, JSON.stringify(data))
+  }, 0)
+}

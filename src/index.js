@@ -8,8 +8,8 @@ import axios from 'axios'
 class App extends React.Component {
 
   componentDidMount() {
-    axios.get('/posts')
-      .then(res => console.log(res))
+    axios.get('/posts/2')
+      .then(res => console.log(res.data))
   }
 
   render() {
