@@ -115,4 +115,4 @@ class FakeJsonAPI {
 
 }
 
-export default new FakeJsonAPI()
+export default FakeJsonAPI
