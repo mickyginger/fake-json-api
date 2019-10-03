@@ -1,4 +1,4 @@
-import sinon from 'sinon'
+import { useFakeXMLHttpRequest } from 'sinon'
 import Dexie from 'dexie'
 import relationships from 'dexie-relationships'
 
@@ -70,7 +70,7 @@ class FakeJsonAPI {
 
   listen() {
 
-    const xhr = sinon.useFakeXMLHttpRequest()
+    const xhr = useFakeXMLHttpRequest()
 
     xhr.onCreate = (xhr) => {
 
