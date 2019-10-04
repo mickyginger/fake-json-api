@@ -1,34 +1,39 @@
-import sinon from 'sinon'
-import schema from './schema.json'
-import initialData from './data.json'
+import { fakeXhr } from 'nise'
 import Dexie from 'dexie'
 import relationships from 'dexie-relationships'
 
-const db = new Dexie('fem', { addons: [relationships] })
+const db = new Dexie('local-json-api', { addons: [relationships] })
 
-const stores = {}
-for(const table in schema) {
-  stores[table] = schema[table].schema
+let _schema
+
+function configure(schema) {
+
+  _schema = schema
+
+  const stores = {}
+  for(const table in schema) {
+    stores[table] = schema[table].schema
+  }
+
+  db.version(1)
+    .stores(stores)
 }
 
-db.version(1)
-  .stores(stores)
-
-for(const store in initialData) {
-  db[store].count()
-    .then(count => {
-      if(!count) return db[store].bulkPut(initialData[store])
-    })
+function loaddata(data) {
+  for(const store in data) {
+    db[store].count()
+      .then(count => {
+        if(!count) db[store].bulkPut(data[store])
+      })
+  }
 }
-
-var xhr = sinon.useFakeXMLHttpRequest()
 
 function getRecords(table) {
-  return db[table].with(schema[table].populate || {})
+  return db[table].with(_schema[table].populate || {})
 }
 
 function getRecord(table, id) {
-  return db[table].where({ id: +id }).with(schema[table].populate || {}).then(records => records[0])
+  return db[table].where({ id: +id }).with(_schema[table].populate || {}).then(records => records[0])
 }
 
 function createRecord(table, data) {
@@ -63,42 +68,53 @@ function toJSON(data) {
   return JSON.stringify(data instanceof Array ? data.map(jsonify) : jsonify(data))
 }
 
-xhr.onCreate = (xhr) => {
+var xhr = fakeXhr.useFakeXMLHttpRequest()
 
-  setTimeout(async () => {
-    let data = null
-    let status = 200
+function listen() {
 
-    const [ table, id ] = getPathInfo(xhr.url)
+  xhr.onCreate = (xhr) => {
 
-    if(xhr.method === 'GET') {
-      data = id ? await getRecord(table, id) : await getRecords(table)
-      if(!data) return xhr.respond(404)
-    }
+    setTimeout(async () => {
+      let data = null
+      let status = 200
 
-    if(xhr.method === 'POST') {
-      data = await createRecord(table, JSON.parse(xhr.requestBody))
-      status = 201
-    }
+      const [ table, id ] = getPathInfo(xhr.url)
 
-    if(xhr.method === 'PUT') {
-      data = await updateRecord(table, id, JSON.parse(xhr.requestBody))
-      if(!data) return xhr.respond(404)
-    }
-
-    if(xhr.method === 'DELETE') {
-      data = await getRecord(table, id)
-      if(data) {
-        await deleteRecord(table, id)
-        return xhr.respond(204)
+      if(xhr.method === 'GET') {
+        data = id ? await getRecord(table, id) : await getRecords(table)
+        if(!data) return xhr.respond(404)
       }
 
-      return xhr.respond(404)
-    }
+      if(xhr.method === 'POST') {
+        data = await createRecord(table, JSON.parse(xhr.requestBody))
+        status = 201
+      }
 
-    xhr.respond(status, {
-      'Content-Type': 'application/json',
-      'Content-Length': data.length
-    }, toJSON(data))
-  }, 500)
+      if(xhr.method === 'PUT') {
+        data = await updateRecord(table, id, JSON.parse(xhr.requestBody))
+        if(!data) return xhr.respond(404)
+      }
+
+      if(xhr.method === 'DELETE') {
+        data = await getRecord(table, id)
+        if(data) {
+          await deleteRecord(table, id)
+          return xhr.respond(204)
+        }
+
+        return xhr.respond(404)
+      }
+
+      xhr.respond(status, {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length
+      }, toJSON(data))
+    }, 500)
+  }
+}
+
+export default {
+  configure,
+  loaddata,
+  listen
 }

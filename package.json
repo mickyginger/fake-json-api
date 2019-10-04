@@ -14,11 +14,11 @@
     "babel-polyfill": "^6.26.0",
     "dexie": "^2.0.4",
     "dexie-relationships": "^1.2.10",
+    "nise": "^1.5.2",
     "pluralize": "^8.0.0",
     "react": "^16.10.1",
     "react-dom": "^16.10.1",
-    "react-local-mongoose": "^1.1.2",
-    "sinon": "^7.5.0"
+    "react-local-mongoose": "^1.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",

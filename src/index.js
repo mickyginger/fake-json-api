@@ -1,7 +1,14 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import './fakeAPI'
+import schema from './schema.json'
+import initialData from './data.json'
+
+import api from './fakeAPI'
+
+api.configure(schema)
+api.loaddata(initialData)
+api.listen()
 
 import axios from 'axios'
 
