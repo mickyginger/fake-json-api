@@ -1,11 +1,15 @@
 const path = require('path')
 const webpack = require('webpack')
+const LodashWebpackPlugin = require('lodash-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve('dist'),
-    filename: 'bundle.js'
+    filename: 'index.js',
+    libraryTarget: 'umd',
+    library: 'FakeJsonAPI',
+    globalObject: 'this'
   },
   module: {
     rules: [
@@ -20,6 +24,8 @@ module.exports = {
     watchContentBase: true
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin()
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.optimize.ModuleConcatenationPlugin(),
+    new LodashWebpackPlugin()
   ]
 }

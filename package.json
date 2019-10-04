@@ -2,11 +2,11 @@
   "name": "local-json-api",
   "version": "1.0.0",
   "description": "A fake API for frontend development with data being stored locally in IndexedDB",
-  "main": "dist/bundle.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --mode=development",
-    "build": "webpack -p"
+    "build": "webpack -p --mode=production"
   },
   "author": "Mike Hayden <mickyginger@gmail.com> (https://github.com/mickyginger)",
   "license": "ISC",
@@ -22,13 +22,15 @@
     "babel-polyfill": "^6.26.0",
     "dexie": "^2.0.4",
     "dexie-relationships": "^1.2.11",
-    "sinon": "^7.5.0"
+    "nise": "^1.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
     "@babel/preset-env": "^7.6.2",
     "babel-loader": "^8.0.6",
+    "lodash-webpack-plugin": "^0.11.5",
     "webpack": "^4.41.0",
+    "webpack-bundle-analyzer": "^3.5.2",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.1"
   }
