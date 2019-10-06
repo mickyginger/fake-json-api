@@ -1,6 +1,6 @@
 {
   "name": "fake-json-api",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A fake API for frontend development with data being stored locally in IndexedDB",
   "main": "dist/fake-json-api.js",
   "scripts": {
