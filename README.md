@@ -51,6 +51,12 @@ api.loaddata({
 })
 ```
 
+Start it intercepting requests:
+
+```js
+api.listen()
+```
+
 Make a request:
 
 ```js

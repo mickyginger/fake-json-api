@@ -13,7 +13,7 @@
   "keywords": [
     "json",
     "api",
-    "sinon",
+    "xhook",
     "dexie",
     "IndexedDB"
   ],
