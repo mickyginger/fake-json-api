@@ -1,6 +1,5 @@
 const path = require('path')
 const webpack = require('webpack')
-const LodashWebpackPlugin = require('lodash-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -25,7 +24,6 @@ module.exports = {
   },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.optimize.ModuleConcatenationPlugin(),
-    new LodashWebpackPlugin()
+    new webpack.optimize.ModuleConcatenationPlugin()
   ]
 }
