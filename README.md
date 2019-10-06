@@ -2,6 +2,8 @@
 
 A small package that intercepts AJAX requests and responds with data stored locally in IndexedDB. It attempts to fake an actual JSON API.
 
+> This is a package that I've put together help make more realistic challenges for [frontendmentor.io](https://beta.frontendmentor.io). I've released it here so that it might help others. Please let me know if you'd like a feature added by opening an issue on the github page.
+
 ## Setup
 
 Install the package:
