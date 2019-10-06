@@ -120,5 +120,9 @@ Available endpoints would be:
 - PUT `/users/:id`
 - DELETE `/users/:id`
 
+## Examples
+
+[Check out the examples](examples) for code snippets and more context.
+
 [1]: https://dexie.org/docs/Version/Version.stores
 [2]: https://github.com/ignasbernotas/dexie-relationships
