@@ -1,0 +1,9 @@
+{
+  "posts": {
+    "schema": "++id,title,content,user_id -> users.id",
+    "populate": { "user": "user_id" }
+  },
+  "users": {
+    "schema": "++id,fullname,username"
+  }
+}
