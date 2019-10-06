@@ -51,7 +51,7 @@ class FakeJsonAPI {
   }
 
   getPathInfo(path) {
-    return path.match(/\/\/(.+)?\/(.+)$/)[2].split('/')
+    return (path.match('://') ? new URL(path).pathname : path).split('/').slice(1)
   }
 
   jsonify(data) {
