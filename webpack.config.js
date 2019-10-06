@@ -7,7 +7,8 @@ module.exports = {
     path: path.resolve('dist'),
     filename: 'fake-json-api.js',
     libraryTarget: 'umd',
-    library: 'FakeJsonAPI',
+    libraryExport: 'default',
+    library: 'fakeApi',
     globalObject: 'this'
   },
   module: {
