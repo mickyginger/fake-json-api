@@ -2,7 +2,7 @@
   "name": "local-json-api",
   "version": "1.0.0",
   "description": "A fake API for frontend development with data being stored locally in IndexedDB",
-  "main": "dist/index.js",
+  "main": "dist/local-json-api.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server --mode=development",
@@ -22,7 +22,7 @@
     "babel-polyfill": "^6.26.0",
     "dexie": "^2.0.4",
     "dexie-relationships": "^1.2.11",
-    "nise": "^1.5.2"
+    "xhook": "^1.4.9"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",

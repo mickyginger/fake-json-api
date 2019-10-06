@@ -1,4 +1,4 @@
-import { fakeXhr } from 'nise'
+import xhook from 'xhook'
 import Dexie from 'dexie'
 import relationships from 'dexie-relationships'
 
@@ -51,7 +51,7 @@ class FakeJsonAPI {
   }
 
   getPathInfo(path) {
-    return path.split('/').slice(1)
+    return path.match(/\/\/.+\/(.+)$/)[1].split('/')
   }
 
   jsonify(data) {
@@ -70,47 +70,49 @@ class FakeJsonAPI {
 
   listen() {
 
-    var xhr = fakeXhr.useFakeXMLHttpRequest()
-
-    xhr.onCreate = (xhr) => {
+    xhook.before((request, callback) => {
 
       setTimeout(async () => {
         let data = null
         let status = 200
 
-        const [ table, id ] = this.getPathInfo(xhr.url)
+        const [ table, id ] = this.getPathInfo(request.url)
 
-        if(xhr.method === 'GET') {
+        if(request.method === 'GET') {
           data = id ? await this.getRecord(table, id) : await this.getRecords(table)
-          if(!data) return xhr.respond(404)
+          if(!data) return request.respond(404)
         }
 
-        if(xhr.method === 'POST') {
-          data = await this.createRecord(table, JSON.parse(xhr.requestBody))
+        if(request.method === 'POST') {
+          data = await this.createRecord(table, JSON.parse(request.body))
           status = 201
         }
 
-        if(xhr.method === 'PUT') {
-          data = await this.updateRecord(table, id, JSON.parse(xhr.requestBody))
-          if(!data) return xhr.respond(404)
+        if(request.method === 'PUT') {
+          data = await this.updateRecord(table, id, JSON.parse(request.body))
+          if(!data) return request.respond(404)
         }
 
-        if(xhr.method === 'DELETE') {
+        if(request.method === 'DELETE') {
           data = await this.getRecord(table, id)
           if(data) {
             await this.deleteRecord(table, id)
-            return xhr.respond(204)
+            return callback({ status: 204 })
           }
 
-          return xhr.respond(404)
+          return callback({ status: 404 })
         }
 
-        xhr.respond(status, {
-          'Content-Type': 'application/json',
-          'Content-Length': data.length
-        }, this.toJSON(data))
+        callback({
+          status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+          },
+          text: this.toJSON(data)
+        })
       }, 500)
-    }
+    })
   }
 
 }
