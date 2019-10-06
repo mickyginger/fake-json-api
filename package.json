@@ -5,9 +5,14 @@
   "main": "dist/fake-json-api.js",
   "scripts": {
     "dev": "webpack-dev-server --mode=development",
-    "build": "webpack -p --mode=production"
+    "build": "webpack -p --mode=production",
+    "prepare": "npm run build"
   },
   "author": "Mike Hayden <mickyginger@gmail.com> (https://github.com/mickyginger)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mickyginger/fake-json-api"
+  },
   "license": "ISC",
   "keywords": [
     "json",
