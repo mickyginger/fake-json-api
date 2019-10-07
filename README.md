@@ -2,7 +2,7 @@
 
 A small package that intercepts AJAX requests and responds with data stored locally in IndexedDB. It attempts to fake an actual JSON API.
 
-> This is a package that I've put together help make more realistic challenges for [frontendmentor.io](https://beta.frontendmentor.io). I've released it here so that it might help others. Please let me know if you'd like a feature added by opening an issue on the github page.
+> This is a package that I've put together help make more realistic challenges for [frontendmentor.io](https://beta.frontendmentor.io). I've released it here so that it might help others. Please let me know if you'd like a feature added by [opening an issue](https://github.com/mickyginger/fake-json-api/issues).
 
 ## Setup
 
@@ -122,7 +122,7 @@ Available endpoints would be:
 
 ## Examples
 
-[Check out the examples](examples) for code snippets and more context.
+[Check out the examples](https://github.com/mickyginger/fake-json-api/tree/master/examples) for code snippets and more context.
 
 [1]: https://dexie.org/docs/Version/Version.stores
 [2]: https://github.com/ignasbernotas/dexie-relationships
