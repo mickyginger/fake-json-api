@@ -1,13 +1,12 @@
-import xhook from 'xhook'
+import xh from 'xhook'
 import Dexie from 'dexie'
 import relationships from 'dexie-relationships'
 
-class FakeJsonAPI {
-  constructor() {
-    this.db = new Dexie('fake-json-api', { addons: [relationships] })
-  }
+const xhook = (xh.xhook || xh)
 
+class FakeJsonAPI {
   configure(schema) {
+    this.db = new Dexie('fake-json-api', { addons: [relationships] })
     this.schema = schema
 
     const stores = {}
@@ -69,7 +68,7 @@ class FakeJsonAPI {
   }
 
   listen() {
-
+    xhook.enable()
     xhook.before((request, callback) => {
 
       setTimeout(async () => {
@@ -103,16 +102,24 @@ class FakeJsonAPI {
           return callback({ status: 404 })
         }
 
+        data = this.toJSON(data)
+
         callback({
           status,
           headers: {
             'Content-Type': 'application/json',
             'Content-Length': data.length
           },
-          text: this.toJSON(data)
+          text: data
         })
       }, 500)
     })
+  }
+
+  destroy() {
+    xhook.disable()
+    this.db.close()
+    return this.db.delete()
   }
 
 }
