@@ -1,7 +1,9 @@
+import setGlobalVars from 'indexeddbshim'
 import xh from 'xhook'
 import Dexie from 'dexie'
 import relationships from 'dexie-relationships'
 
+setGlobalVars(window)
 const xhook = (xh.xhook || xh)
 
 class FakeJsonAPI {
