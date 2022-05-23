@@ -23,7 +23,7 @@
     "IndexedDB"
   ],
   "dependencies": {
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "dexie-relationships": "^1.2.11",
     "indexeddbshim": "^6.1.0",
     "xhook": "^1.4.9"
